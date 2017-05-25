@@ -37,6 +37,15 @@ function with_libgit2_temp_home(f)
     end
 end
 
+function is_defined_remote(repo::LibGit2.GitRepo, remote::AbstractString)
+    try
+        LibGit2.get(LibGit2.GitRemote, repo, name)
+    catch e
+        return false
+    end
+    return true
+end
+
 #########
 # TESTS #
 #########
@@ -256,9 +265,9 @@ mktempdir() do dir
                 @test isa(remote, LibGit2.GitRemote)
                 @test sprint(show, remote) == "GitRemote:\nRemote name: upstream url: $repo_url"
                 @test LibGit2.isattached(repo)
-                LibGit2.set_remote_url(repo, "", remote="upstream")
+                LibGit2.set_remote_url(repo, "unknown", remote="upstream")
                 remote = LibGit2.get(LibGit2.GitRemote, repo, branch)
-                @test sprint(show, remote) == "GitRemote:\nRemote name: upstream url: "
+                @test sprint(show, remote) == "GitRemote:\nRemote name: upstream url: unknown"
                 close(remote)
                 LibGit2.set_remote_url(cache_repo, repo_url, remote="upstream")
                 remote = LibGit2.get(LibGit2.GitRemote, repo, branch)
@@ -1068,6 +1077,47 @@ mktempdir() do dir
             open(joinpath(test_repo, test_file), "r") do io
                 @test read(io)[end] != 0x41
             end
+        finally
+            close(repo)
+        end
+    end
+
+    @testset "Modify remote" begin
+        repo = LibGit2.GitRepo(test_repo)
+        try
+            name = "test"
+            url = "https://test.com/repo"
+
+            @test !is_defined_remote(repo, name)
+
+            # Set just the fetch URL
+            LibGit2.set_remote_fetch_url(repo, url, remote=name)
+            remote = LibGit2.get(LibGit2.GitRemote, repo, name)
+            @test LibGit2.name(remote) == name
+            @test LibGit2.url(remote) == url
+            @test LibGit2.push_url(remote) == ""
+
+            LibGit2.remove_remote(repo, name)
+            @test !is_defined_remote(repo, name)
+
+            # Set just the push URL
+            LibGit2.set_remote_push_url(repo, url, remote=name)
+            remote = LibGit2.get(LibGit2.GitRemote, repo, name)
+            @test LibGit2.name(remote) == name
+            @test LibGit2.url(remote) == ""
+            @test LibGit2.push_url(remote) == url
+
+            LibGit2.remove_remote(repo, name)
+            @test !is_defined_remote(repo, name)
+
+            # Set the fetch and push URL
+            LibGit2.set_remote_url(repo, url, remote=name)
+            remote = LibGit2.get(LibGit2.GitRemote, repo, name)
+            @test LibGit2.name(remote) == name
+            @test LibGit2.url(remote) ==  url
+            @test LibGit2.push_url(remote) == url
+
+            LibGit2.remove_remote(repo, name)
         finally
             close(repo)
         end
