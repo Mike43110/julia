@@ -266,20 +266,20 @@ end
 
 Base.show(io::IO, rmt::GitRemote) = print(io, "GitRemote:\nRemote name: ", name(rmt), " url: ", url(rmt))
 
-function set_remote_fetch_url(repo::GitRepo, url::AbstractString; remote::AbstractString="origin")
+function set_remote_fetch_url(repo::GitRepo, url::AbstractString, remote::AbstractString="origin")
     @check ccall((:git_remote_set_url, :libgit2), Cint,
                  (Ptr{Void}, Cstring, Cstring),
                  repo.ptr, remote, url)
 end
 
-function set_remote_push_url(repo::GitRepo, url::AbstractString; remote::AbstractString="origin")
+function set_remote_push_url(repo::GitRepo, url::AbstractString, remote::AbstractString="origin")
     @check ccall((:git_remote_set_pushurl, :libgit2), Cint,
                  (Ptr{Void}, Cstring, Cstring),
                  repo.ptr, remote, url)
 end
 
 """
-    set_remote_url(repo::GitRepo, url::AbstractString; remote::AbstractString="origin")
+    set_remote_url(repo::GitRepo, url::AbstractString, remote::AbstractString="origin")
 
 Set both the fetch and push `url` for `remote` for the git repository `repo`. The default
 name of the remote is "origin".
@@ -295,9 +295,10 @@ url2 = "https://github.com/JuliaLang/Example2.jl"
 LibGit2.set_remote_url(repo_path, url2, remote="upstream2")
 ```
 """
-function set_remote_url(repo::GitRepo, url::AbstractString; remote::AbstractString="origin")
-    set_remote_fetch_url(repo, url, remote=remote)
-    set_remote_push_url(repo, url, remote=remote)
+function set_remote_url(repo::GitRepo, url::AbstractString, remote_arg::AbstractString="origin"; remote=nothing)
+    remote = deprecate_remote_keyword(:set_remote_url, "repo, url", remote_arg, remote)
+    set_remote_fetch_url(repo, url, remote)
+    set_remote_push_url(repo, url, remote)
 end
 
 function remove_remote(repo::GitRepo, remote::AbstractString)
@@ -306,26 +307,27 @@ function remove_remote(repo::GitRepo, remote::AbstractString)
                  repo.ptr, remote)
 end
 
-function set_remote_fetch_url(path::AbstractString, url::AbstractString; remote::AbstractString="origin")
+function set_remote_fetch_url(path::AbstractString, url::AbstractString, remote::AbstractString="origin")
     with(GitRepo, path) do repo
-        set_remote_fetch_url(repo, url, remote=remote)
+        set_remote_fetch_url(repo, url, remote)
     end
 end
 
-function set_remote_push_url(path::AbstractString, url::AbstractString; remote::AbstractString="origin")
+function set_remote_push_url(path::AbstractString, url::AbstractString, remote::AbstractString="origin")
     with(GitRepo, path) do repo
-        set_remote_push_url(repo, url, remote=remote)
+        set_remote_push_url(repo, url, remote)
     end
 end
 
 """
-    set_remote_url(path::AbstractString, url::AbstractString; remote::AbstractString="origin")
+    set_remote_url(path::AbstractString, url::AbstractString, remote::AbstractString="origin")
 
 Set both the fetch and push `url` for `remote` for the git repository located at `path`.
 The default name of the remote is "origin".
 """
-function set_remote_url(path::AbstractString, url::AbstractString; remote::AbstractString="origin")
+function set_remote_url(path::AbstractString, url::AbstractString, remote_arg::AbstractString="origin"; remote=nothing)
+    remote = deprecate_remote_keyword(:set_remote_url, "path, url", remote_arg, remote)
     with(GitRepo, path) do repo
-        set_remote_url(repo, url, remote=remote)
+        set_remote_url(repo, url, remote)
     end
 end

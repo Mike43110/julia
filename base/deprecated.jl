@@ -1348,6 +1348,18 @@ end
 @deprecate srand(filename::AbstractString, n::Integer=4) srand(read!(filename, Array{UInt32}(Int(n))))
 @deprecate MersenneTwister(filename::AbstractString)  srand(MersenneTwister(0), read!(filename, Array{UInt32}(Int(4))))
 
+# when this deprecation is deleted, remove all calls to it, and all `remote=nothing` keyword
+# arguments, and rename `remote_arg` to `remote` in base/libgit2/remote.jl
+@eval LibGit2 function deprecate_remote_keyword(f, sig, remote_arg, remote_kwarg)
+    if remote_kwarg === nothing
+        return remote_arg
+    else
+        msg = "$f($sig; remote=\"$remote_kwarg\") is deprecated, use $f($sig, \"$remote_kwarg\")"
+        Base.depwarn(msg, f)
+        return remote_kwarg::AbstractString
+    end
+end
+
 # END 0.7 deprecations
 
 # BEGIN 1.0 deprecations

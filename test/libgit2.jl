@@ -265,11 +265,11 @@ mktempdir() do dir
                 @test isa(remote, LibGit2.GitRemote)
                 @test sprint(show, remote) == "GitRemote:\nRemote name: upstream url: $repo_url"
                 @test LibGit2.isattached(repo)
-                LibGit2.set_remote_url(repo, "unknown", remote="upstream")
+                LibGit2.set_remote_url(repo, "unknown", "upstream")
                 remote = LibGit2.get(LibGit2.GitRemote, repo, branch)
                 @test sprint(show, remote) == "GitRemote:\nRemote name: upstream url: unknown"
                 close(remote)
-                LibGit2.set_remote_url(cache_repo, repo_url, remote="upstream")
+                LibGit2.set_remote_url(cache_repo, repo_url, "upstream")
                 remote = LibGit2.get(LibGit2.GitRemote, repo, branch)
                 @test sprint(show, remote) == "GitRemote:\nRemote name: upstream url: $repo_url"
                 LibGit2.add_fetch!(repo, remote, "upstream")
@@ -1091,7 +1091,7 @@ mktempdir() do dir
             @test !is_defined_remote(repo, name)
 
             # Set just the fetch URL
-            LibGit2.set_remote_fetch_url(repo, url, remote=name)
+            LibGit2.set_remote_fetch_url(repo, url, name)
             remote = LibGit2.get(LibGit2.GitRemote, repo, name)
             @test LibGit2.name(remote) == name
             @test LibGit2.url(remote) == url
@@ -1101,7 +1101,7 @@ mktempdir() do dir
             @test !is_defined_remote(repo, name)
 
             # Set just the push URL
-            LibGit2.set_remote_push_url(repo, url, remote=name)
+            LibGit2.set_remote_push_url(repo, url, name)
             remote = LibGit2.get(LibGit2.GitRemote, repo, name)
             @test LibGit2.name(remote) == name
             @test LibGit2.url(remote) == ""
@@ -1111,7 +1111,7 @@ mktempdir() do dir
             @test !is_defined_remote(repo, name)
 
             # Set the fetch and push URL
-            LibGit2.set_remote_url(repo, url, remote=name)
+            LibGit2.set_remote_url(repo, url, name)
             remote = LibGit2.get(LibGit2.GitRemote, repo, name)
             @test LibGit2.name(remote) == name
             @test LibGit2.url(remote) ==  url
