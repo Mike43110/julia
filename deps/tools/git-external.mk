@@ -53,7 +53,21 @@ $5/$1/source-compiled: $5/$1/.git/HEAD
 $$($2_SRC_FILE): | $$($2_SRC_FILE)/HEAD
 	touch -c $$@
 
-else # DEPS_GIT
+else ifeq ($(SHELL_TYPE),MSYS)# DEPS_GIT, repeated tar thanks to msys tar not handling symlinks correctly
+
+$2_SRC_DIR := $1-$$($2_SHA1)
+$2_SRC_FILE := $$(SRCCACHE)/$$($2_SRC_DIR).tar.gz
+$$($2_SRC_FILE): | $$(SRCCACHE)
+	$$(JLDOWNLOAD) $$@ $$(call $2_TAR_URL,$$($2_SHA1))
+$5/$$($2_SRC_DIR)/source-extracted: $$($2_SRC_FILE)
+	$$(JLCHECKSUM) $$<
+	-rm -r $$(dir $$@)
+	mkdir -p $$(dir $$@)
+	-$(TAR) -C $$(dir $$@) --strip-components 1 -xf $$<
+	$(TAR) -C $$(dir $$@) --strip-components 1 -xf $$<
+	echo 1 > $$@
+
+else
 
 $2_SRC_DIR := $1-$$($2_SHA1)
 $2_SRC_FILE := $$(SRCCACHE)/$$($2_SRC_DIR).tar.gz

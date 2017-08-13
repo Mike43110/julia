@@ -284,18 +284,27 @@ JLCHECKSUM := $(JULIAHOME)/deps/tools/jlchecksum
 
 # Figure out OS and architecture
 OS := $(BUILD_OS)
+SHELL_TYPE := BASH
 
 ifneq (,$(findstring MINGW,$(OS)))
 override OS := WINNT
+override SHELL_TYPE := MSYS
 endif
 ifneq (,$(findstring MINGW,$(BUILD_OS)))
 override BUILD_OS := WINNT
+override SHELL_TYPE := MSYS
 endif
 ifneq (,$(findstring MSYS,$(OS)))
 override OS := WINNT
+override SHELL_TYPE := MSYS
 endif
 ifneq (,$(findstring MSYS,$(BUILD_OS)))
 override BUILD_OS := WINNT
+override SHELL_TYPE := MSYS
+endif
+
+ifeq ($(SHELL_TYPE), MSYS)
+override CMAKE_GENERATOR := Ninja
 endif
 
 ifeq ($(BUILD_OS), WINNT)

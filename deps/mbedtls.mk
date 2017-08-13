@@ -12,7 +12,7 @@ MBEDTLS_OPTS := $(CMAKE_COMMON) -DUSE_SHARED_MBEDTLS_LIBRARY=ON \
 
 MBEDTLS_OPTS += -DENABLE_ZLIB_SUPPORT=OFF
 ifeq ($(BUILD_OS),WINNT)
-MBEDTLS_OPTS += -G"MSYS Makefiles"
+MBEDTLS_OPTS += -G"$(CMAKE_GENERATOR)"
 endif
 
 ifneq (,$(findstring $(OS),Linux FreeBSD))
@@ -36,7 +36,9 @@ $(BUILDDIR)/$(MBEDTLS_SRC)/build-configured: $(SRCCACHE)/$(MBEDTLS_SRC)/source-e
 	echo 1 > $@
 
 $(BUILDDIR)/$(MBEDTLS_SRC)/build-compiled: $(BUILDDIR)/$(MBEDTLS_SRC)/build-configured
-	$(MAKE) -C $(dir $<)
+	$(if $(filter $(CMAKE_GENERATOR),make), \
+		  $(MAKE) -C $(dir $<), \
+		  $(CMAKE) --build $(dir $<))
 	echo 1 > $@
 
 $(BUILDDIR)/$(MBEDTLS_SRC)/build-checked: $(BUILDDIR)/$(MBEDTLS_SRC)/build-compiled
