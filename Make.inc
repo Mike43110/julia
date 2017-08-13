@@ -303,10 +303,6 @@ override BUILD_OS := WINNT
 override SHELL_TYPE := MSYS
 endif
 
-ifeq ($(SHELL_TYPE), MSYS)
-override CMAKE_GENERATOR := Ninja
-endif
-
 ifeq ($(BUILD_OS), WINNT)
 BUILD_EXE := .exe
 else ifneq (,$(findstring CYGWIN,$(BUILD_OS)))

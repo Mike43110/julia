@@ -31,7 +31,8 @@ ifeq ($(OS),WINNT)
 CMAKE_COMMON += -DCMAKE_C_COMPILER="$(CC_BASE)" #The workaround is unecessary on windows and causes msys issues
 else
 CMAKE_COMMON += -DCMAKE_C_COMPILER="$$(which $(CC_BASE))"
-endififneq ($(strip $(CMAKE_CC_ARG)),)
+endif
+ifneq ($(strip $(CMAKE_CC_ARG)),)
 CMAKE_COMMON += -DCMAKE_C_COMPILER_ARG1="$(CMAKE_CC_ARG)"
 endif
 CMAKE_COMMON += -DCMAKE_CXX_COMPILER="$(CXX_BASE)"
